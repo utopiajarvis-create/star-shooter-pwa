@@ -1,0 +1,13 @@
+export class Vector2 {
+  constructor(public x: number = 0, public y: number = 0) {}
+  
+  add(v: Vector2): Vector2 { return new Vector2(this.x + v.x, this.y + v.y); }
+  sub(v: Vector2): Vector2 { return new Vector2(this.x - v.x, this.y - v.y); }
+  mult(scalar: number): Vector2 { return new Vector2(this.x * scalar, this.y * scalar); }
+  mag(): number { return Math.sqrt(this.x * this.x + this.y * this.y); }
+  normalize(): Vector2 {
+    const m = this.mag();
+    if (m === 0) return new Vector2(0, 0);
+    return new Vector2(this.x / m, this.y / m);
+  }
+}
