@@ -1,60 +1,52 @@
 import './style.css'
-import typescriptLogo from './assets/typescript.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import { setupCounter } from './counter.ts'
+import { Ship } from './entities/Ship'
+import { InputManager } from './InputManager'
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-<section id="center">
-  <div class="hero">
-    <img src="${heroImg}" class="base" width="170" height="179">
-    <img src="${typescriptLogo}" class="framework" alt="TypeScript logo"/>
-    <img src="${viteLogo}" class="vite" alt="Vite logo" />
-  </div>
-  <div>
-    <h1>Get started</h1>
-    <p>Edit <code>src/main.ts</code> and save to test <code>HMR</code></p>
-  </div>
-  <button id="counter" type="button" class="counter"></button>
-</section>
+const canvas = document.createElement('canvas');
+document.body.appendChild(canvas);
+const ctx = canvas.getContext('2d')!;
 
-<div class="ticks"></div>
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
 
-<section id="next-steps">
-  <div id="docs">
-    <svg class="icon" role="presentation" aria-hidden="true"><use href="/icons.svg#documentation-icon"></use></svg>
-    <h2>Documentation</h2>
-    <p>Your questions, answered</p>
-    <ul>
-      <li>
-        <a href="https://vite.dev/" target="_blank">
-          <img class="logo" src="${viteLogo}" alt="" />
-          Explore Vite
-        </a>
-      </li>
-      <li>
-        <a href="https://www.typescriptlang.org" target="_blank">
-          <img class="button-icon" src="${typescriptLogo}" alt="">
-          Learn more
-        </a>
-      </li>
-    </ul>
-  </div>
-  <div id="social">
-    <svg class="icon" role="presentation" aria-hidden="true"><use href="/icons.svg#social-icon"></use></svg>
-    <h2>Connect with us</h2>
-    <p>Join the Vite community</p>
-    <ul>
-      <li><a href="https://github.com/vitejs/vite" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#github-icon"></use></svg>GitHub</a></li>
-      <li><a href="https://chat.vite.dev/" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#discord-icon"></use></svg>Discord</a></li>
-      <li><a href="https://x.com/vite_js" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#x-icon"></use></svg>X.com</a></li>
-      <li><a href="https://bsky.app/profile/vite.dev" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#bluesky-icon"></use></svg>Bluesky</a></li>
-    </ul>
-  </div>
-</section>
+const input = new InputManager();
+const ship = new Ship(canvas.width / 2, canvas.height / 2);
 
-<div class="ticks"></div>
-<section id="spacer"></section>
-`
+function gameLoop() {
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
+  if (input.isKeyPressed('ArrowLeft')) ship.turnLeft();
+  if (input.isKeyPressed('ArrowRight')) ship.turnRight();
+  if (input.isKeyPressed('ArrowUp')) ship.thrust();
+
+  ship.update();
+
+  // Screen wrap
+  if (ship.position.x < 0) ship.position.x = canvas.width;
+  if (ship.position.x > canvas.width) ship.position.x = 0;
+  if (ship.position.y < 0) ship.position.y = canvas.height;
+  if (ship.position.y > canvas.height) ship.position.y = 0;
+
+  // Draw ship (triangle)
+  ctx.save();
+  ctx.translate(ship.position.x, ship.position.y);
+  ctx.rotate(ship.position.rotation); // Needs fix: ship.rotation
+  ctx.rotate(ship.rotation);
+  ctx.beginPath();
+  ctx.moveTo(15, 0);
+  ctx.lineTo(-10, 10);
+  ctx.lineTo(-10, -10);
+  ctx.closePath();
+  ctx.fillStyle = '#0f0';
+  ctx.fill();
+  ctx.restore();
+
+  requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
